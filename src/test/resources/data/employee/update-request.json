@@ -1,0 +1,10 @@
+{
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "email": "jane.smith@example.com",
+  "profile": {
+    "bio": "QA engineer",
+    "phoneNumber": "+995577111111"
+  }
+}
+

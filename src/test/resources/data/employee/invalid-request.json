@@ -1,0 +1,11 @@
+{
+  "firstName": "J",
+  "lastName": "D",
+  "email": "not-an-email",
+  "companyId": 1,
+  "profile": {
+    "bio": "x",
+    "phoneNumber": "123"
+  }
+}
+
