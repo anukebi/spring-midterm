@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: midterm
+  threads:
+    virtual:
+      enabled: true
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/midterm}
+    username: ${DB_USERNAME:midterm}
+    password: ${DB_PASSWORD:password}

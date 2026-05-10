@@ -1,0 +1,219 @@
+openapi: 3.0.3
+info:
+  title: Midterm API
+  version: 1.0.0
+
+paths:
+  /api/companies:
+    get:
+      tags:
+        - Company
+      summary: Get all companies
+      operationId: getCompanies
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompanyDto'
+    post:
+      tags:
+        - Company
+      summary: Create a company
+      operationId: saveCompany
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyDto'
+  /api/companies/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - Company
+      summary: Get company by ID
+      operationId: getCompany
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyDto'
+        '404':
+          description: Not found
+    put:
+      tags:
+        - Company
+      summary: Update a company
+      operationId: updateCompany
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyDto'
+      responses:
+        '204':
+          description: Updated
+        '404':
+          description: Not found
+    delete:
+      tags:
+        - Company
+      summary: Delete a company
+      operationId: deleteCompany
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Not found
+
+
+  /api/employees:
+    get:
+      tags:
+        - Employee
+      summary: Get all employees
+      operationId: getEmployees
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmployeeDto'
+    post:
+      tags:
+        - Employee
+      summary: Create an employee
+      operationId: saveEmployee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeDto'
+  /api/employees/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - Employee
+      summary: Get employee by ID
+      operationId: getEmployee
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeDto'
+        '404':
+          description: Not found
+    put:
+      tags:
+        - Employee
+      summary: Update an employee
+      operationId: updateEmployee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeDto'
+      responses:
+        '204':
+          description: Updated
+        '404':
+          description: Not found
+    delete:
+      tags:
+        - Employee
+      summary: Delete an employee
+      operationId: deleteEmployee
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Not found
+
+
+components:
+  schemas:
+    CompanyDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+      required:
+        - name
+    ProfileDto:
+      type: object
+      properties:
+        bio:
+          type: string
+        phoneNumber:
+          type: string
+    EmployeeDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 50
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 50
+        email:
+          type: string
+          format: email
+        companyId:
+          type: integer
+          format: int64
+        profile:
+          $ref: '#/components/schemas/ProfileDto'
+      required:
+        - firstName
+        - lastName
+        - email
