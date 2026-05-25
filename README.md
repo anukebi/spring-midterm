@@ -1,13 +1,103 @@
-# Midterm Project — Company & Employee REST API
+# Midterm Project - Company & Employee REST API
 
 Spring Boot (Java 21) REST API implementing CRUD for **Company** and **Employee** with layered architecture, DTO-based
 responses, validation, Liquibase migrations, Swagger UI, and integration tests with MockMvc + Testcontainers.
+
+## Security (Spring Security)
+
+This project uses **Spring Security** with database-backed users, **BCrypt** password hashing, role-based access
+control, and method-level security (`@PreAuthorize`).
+
+### Login credentials
+
+| Username | Password   | Role  |
+|----------|------------|-------|
+| `admin`  | `admin123` | ADMIN |
+| `user`   | `user123`  | USER  |
+
+Users are stored in the `users` table and seeded on first startup (`UserInitializerService`) with encrypted passwords.
+
+### Authentication (form login + session cookie)
+
+1. Open [`/login`](http://localhost:8080/login) - Spring Security’s built-in login page - and sign in. Spring creates an
+   HTTP session and sets a **`JSESSIONID`** cookie.
+2. Use the API in the same browser (e.g. Swagger UI) - the cookie is sent automatically.
+3. **Logout**: `POST /logout` (or use the logout link after implementing one); session is invalidated.
+
+Integration tests authenticate the same way: `POST /login` with username/password, then reuse the session cookie on API
+calls.
+
+**Example with curl**:
+
+```bash
+# 1) Log in (save cookies)
+curl -c cookies.txt -b cookies.txt -X POST http://localhost:8080/login \
+  -d "username=admin&password=admin123"
+
+# 2) Read CSRF token from cookie file, then call API (example)
+CSRF=$(grep XSRF-TOKEN cookies.txt | awk '{print $7}')
+curl -b cookies.txt -H "X-XSRF-TOKEN: $CSRF" http://localhost:8080/api/profiles
+```
+
+### Access rules
+
+| Area                                      | Enforcement                                                                            | Who can access             |
+|-------------------------------------------|----------------------------------------------------------------------------------------|----------------------------|
+| `GET /api/companies/**`                   | -                                                                                      | Public                     |
+| `POST`, `PUT`, `DELETE /api/companies/**` | **`SecurityFilterChain`** `.hasRole("ADMIN")`                                          | **ADMIN** only             |
+| `GET`, `POST`, `PUT /api/employees/**`    | **`SecurityFilterChain`** `.authenticated()`                                           | **USER** or **ADMIN**      |
+| `DELETE /api/employees/**`                | **`SecurityFilterChain`** `.hasRole("ADMIN")`                                          | **ADMIN** only             |
+| `GET /api/profiles/**`                    | **`SecurityFilterChain`** `.authenticated()` + **`@PreAuthorize`** on `ProfileService` | **ADMIN** only (see below) |
+| Swagger UI, OpenAPI docs                  | -                                                                                      | Public                     |
+
+### Two separate enforcement layers (no overlap)
+
+1. **URL / filter chain** (`SecurityConfig`) - `hasRole("ADMIN")` for:
+    - Company create, update, delete
+    - Employee delete
+
+2. **Method security** (`@PreAuthorize`) - `ProfileService` only:
+    - `getAllProfiles()` and `getProfile(id)` use `@PreAuthorize("hasRole('ADMIN')")`
+    - The filter chain only requires **login** for `/api/profiles/**`; a **USER** passes authentication but receives *
+      *403 Forbidden** from method security. An **ADMIN** is allowed through.
+
+This makes it obvious that `@PreAuthorize` is active: log in as `user` / `user123`, call `GET /api/profiles` → 403; log
+in as `admin` / `admin123` → 200.
+
+### Protected endpoints (authentication required)
+
+- All `/api/employees/**` endpoints
+- `/api/profiles/**` (must be logged in; ADMIN role enforced by `@PreAuthorize`)
+
+### CSRF
+
+CSRF is **explicitly configured** in `SecurityConfig`:
+
+```java
+.csrf(csrf -> csrf
+		.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+		.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
+```
+
+Because authentication uses **`JSESSIONID`**, mutating requests (`POST`, `PUT`, `DELETE`) must include a valid CSRF
+token.
+
+- **Login** (`/login`): Spring Security’s default login form includes the CSRF field automatically
+- **REST API** (after login): send header **`X-XSRF-TOKEN`** matching the **`XSRF-TOKEN`** cookie
+- **Tests**: MockMvc `.with(csrf())` on mutating requests
+
+### Security configuration
+
+- `SecurityConfig` - `SecurityFilterChain`, explicit CSRF setup, `BCryptPasswordEncoder`, form login/logout, URL rules
+- `UserService` - loads users from PostgreSQL
+- `@EnableMethodSecurity` - enables `@PreAuthorize` on service methods
 
 ## Tech stack
 
 - **Java**: 21
 - **Spring Boot**: 4
 - **Web**: Spring WebMVC
+- **Security**: Spring Security (BCrypt, roles, method security)
 - **Persistence**: Spring Data JPA (Hibernate)
 - **Database**: PostgreSQL
 - **Migrations**: Liquibase (`src/main/resources/db/changelog`)
@@ -18,8 +108,9 @@ responses, validation, Liquibase migrations, Swagger UI, and integration tests w
 ## Project structure (layered)
 
 - **Controller**: `src/main/java/org/edu/kiu/midterm/controller/`
-    - `CompanyController`, `EmployeeController`
-    - Implements generated API interfaces (`org.edu.kiu.midterm.api.*`)
+    - `CompanyController`, `EmployeeController`, `ProfileController` - implement OpenAPI-generated interfaces (
+      `org.edu.kiu.midterm.api.*`)
+    - Login/logout: Spring Security built-in `/login` page (not a custom REST controller)
 - **Service**: `src/main/java/org/edu/kiu/midterm/service/`
     - Business logic lives here (create/get/update/delete)
 - **Repository**: `src/main/java/org/edu/kiu/midterm/repository/`
@@ -49,11 +140,16 @@ Defined in `src/main/resources/api/openapi.yaml`.
 
 ### Employee
 
-- **POST** `/api/employees` — create employee
-- **GET** `/api/employees` — get all employees
-- **GET** `/api/employees/{id}` — get employee by id
-- **PUT** `/api/employees/{id}` — update employee
-- **DELETE** `/api/employees/{id}` — delete employee
+- **POST** `/api/employees` - create employee (authenticated)
+- **GET** `/api/employees` - get all employees (authenticated)
+- **GET** `/api/employees/{id}` - get employee by id (authenticated)
+- **PUT** `/api/employees/{id}` - update employee (authenticated)
+- **DELETE** `/api/employees/{id}` - delete employee (**ADMIN**)
+
+### Profile
+
+- **GET** `/api/profiles` - list profiles (**ADMIN**, via `@PreAuthorize`)
+- **GET** `/api/profiles/{id}` - get profile by id (**ADMIN**, via `@PreAuthorize`)
 
 ## Validation & error handling
 
