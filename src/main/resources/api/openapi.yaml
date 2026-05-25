@@ -169,6 +169,48 @@ paths:
         '404':
           description: Not found
 
+  /api/profiles:
+    get:
+      tags:
+        - Profile
+      summary: Get all profiles (ADMIN, enforced by @PreAuthorize)
+      operationId: getProfiles
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProfileDto'
+        '401':
+          description: Unauthorized
+  /api/profiles/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - Profile
+      summary: Get profile by ID (ADMIN, enforced by @PreAuthorize)
+      operationId: getProfile
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileDto'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
 
 components:
   schemas:
@@ -187,6 +229,9 @@ components:
     ProfileDto:
       type: object
       properties:
+        id:
+          type: integer
+          format: int64
         bio:
           type: string
         phoneNumber:
