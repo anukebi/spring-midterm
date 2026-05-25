@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -22,6 +23,8 @@ public class CompanyControllerTest extends CoreTest {
     var expectedJson = loadResource("data/company/create-expected.json");
 
     mockMvc.perform(post("/api/companies")
+            .with(csrf())
+            .session(adminSession())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(requestJson))
@@ -55,6 +58,8 @@ public class CompanyControllerTest extends CoreTest {
     var updateJson = loadResource("data/company/update-request.json");
 
     mockMvc.perform(put("/api/companies/{id}", 1L)
+            .with(csrf())
+            .session(adminSession())
             .contentType(MediaType.APPLICATION_JSON)
             .content(updateJson))
         .andExpect(status().isNoContent());
@@ -67,7 +72,7 @@ public class CompanyControllerTest extends CoreTest {
   @Test
   @Sql("classpath:data/company/companies.sql")
   void deleteCompany_noContent_thenGetReturns404() throws Exception {
-    mockMvc.perform(delete("/api/companies/{id}", 1L))
+    mockMvc.perform(delete("/api/companies/{id}", 1L).with(csrf()).session(adminSession()))
         .andExpect(status().isNoContent());
 
     mockMvc.perform(get("/api/companies/{id}", 1L))
@@ -79,6 +84,8 @@ public class CompanyControllerTest extends CoreTest {
     var invalidJson = loadResource("data/company/invalid-name-too-short.json");
 
     mockMvc.perform(post("/api/companies")
+            .with(csrf())
+            .session(adminSession())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(invalidJson))
@@ -91,6 +98,8 @@ public class CompanyControllerTest extends CoreTest {
     var invalidJson = loadResource("data/company/invalid-name-too-short.json");
 
     mockMvc.perform(put("/api/companies/{id}", 1L)
+            .with(csrf())
+            .session(adminSession())
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
             .content(invalidJson))
