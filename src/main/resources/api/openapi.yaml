@@ -4,6 +4,24 @@ info:
   version: 1.0.0
 
 paths:
+  /api/app-info:
+    parameters:
+      - in: header
+        name: Accept-Language
+        schema:
+          type: string
+    get:
+      tags:
+        - AppInfo
+      summary: Application metadata (localized welcome message)
+      operationId: getAppInfo
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppInfoDto'
   /api/companies:
     parameters:
       - in: header
@@ -244,6 +262,20 @@ paths:
 
 components:
   schemas:
+    AppInfoDto:
+      type: object
+      properties:
+        title:
+          type: string
+        contactEmail:
+          type: string
+        paginationLimit:
+          type: integer
+          format: int32
+        externalServiceUrl:
+          type: string
+        welcomeMessage:
+          type: string
     CompanyDto:
       type: object
       properties:

@@ -1,17 +1,19 @@
 package org.edu.kiu.midterm.config;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
@@ -36,9 +38,11 @@ public class SecurityConfig {
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(csrfHandler))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/login", "/logout", "/error")
+            .requestMatchers("/error")
             .permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
+            .permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/app-info")
             .permitAll()
             .requestMatchers(HttpMethod.GET, "/api/companies", "/api/companies/**")
             .permitAll()
@@ -64,13 +68,14 @@ public class SecurityConfig {
             .logoutUrl("/logout")
             .logoutSuccessUrl("/login?logout")
             .permitAll())
-        .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
-          if (request.getRequestURI().startsWith("/api/")) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-          } else {
-            new LoginUrlAuthenticationEntryPoint("/login").commence(request, response, authException);
-          }
-        }));
+        .exceptionHandling(ex -> ex
+            .defaultAuthenticationEntryPointFor(
+                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                request -> request.getRequestURI().startsWith("/api/"))
+            .defaultAuthenticationEntryPointFor(
+                new LoginUrlAuthenticationEntryPoint("/login"),
+                request -> !request.getRequestURI().startsWith("/api/")))
+        .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
 
     return http.build();
   }
