@@ -5,11 +5,17 @@ info:
 
 paths:
   /api/companies:
+    parameters:
+      - in: header
+        name: Accept-Language
+        schema:
+          type: string
     get:
       tags:
         - Company
       summary: Get all companies
       operationId: getCompanies
+      x-spring-paginated: true
       responses:
         '200':
           description: Successful operation
@@ -39,6 +45,10 @@ paths:
                 $ref: '#/components/schemas/CompanyDto'
   /api/companies/{id}:
     parameters:
+      - in: header
+        name: Accept-Language
+        schema:
+          type: string
       - name: id
         in: path
         required: true
@@ -88,11 +98,17 @@ paths:
 
 
   /api/employees:
+    parameters:
+      - in: header
+        name: Accept-Language
+        schema:
+          type: string
     get:
       tags:
         - Employee
       summary: Get all employees
       operationId: getEmployees
+      x-spring-paginated: true
       responses:
         '200':
           description: Successful operation
@@ -122,6 +138,10 @@ paths:
                 $ref: '#/components/schemas/EmployeeDto'
   /api/employees/{id}:
     parameters:
+      - in: header
+        name: Accept-Language
+        schema:
+          type: string
       - name: id
         in: path
         required: true
@@ -170,11 +190,17 @@ paths:
           description: Not found
 
   /api/profiles:
+    parameters:
+      - in: header
+        name: Accept-Language
+        schema:
+          type: string
     get:
       tags:
         - Profile
       summary: Get all profiles (ADMIN, enforced by @PreAuthorize)
       operationId: getProfiles
+      x-spring-paginated: true
       responses:
         '200':
           description: Successful operation
@@ -188,6 +214,10 @@ paths:
           description: Unauthorized
   /api/profiles/{id}:
     parameters:
+      - in: header
+        name: Accept-Language
+        schema:
+          type: string
       - name: id
         in: path
         required: true
@@ -222,8 +252,9 @@ components:
           format: int64
         name:
           type: string
-          minLength: 2
-          maxLength: 100
+          x-field-extra-annotation: |-
+            @jakarta.validation.constraints.NotBlank(message = "{validation.company.name.required}")
+            @jakarta.validation.constraints.Size(min = 2, max = 100, message = "{validation.company.name.size}")
       required:
         - name
     ProfileDto:
@@ -244,15 +275,19 @@ components:
           format: int64
         firstName:
           type: string
-          minLength: 2
-          maxLength: 50
+          x-field-extra-annotation: |-
+            @jakarta.validation.constraints.NotBlank(message = "{validation.employee.firstName.required}")
+            @jakarta.validation.constraints.Size(min = 2, max = 50, message = "{validation.employee.firstName.size}")
         lastName:
           type: string
-          minLength: 2
-          maxLength: 50
+          x-field-extra-annotation: |-
+            @jakarta.validation.constraints.NotBlank(message = "{validation.employee.lastName.required}")
+            @jakarta.validation.constraints.Size(min = 2, max = 50, message = "{validation.employee.lastName.size}")
         email:
           type: string
-          format: email
+          x-field-extra-annotation: |-
+            @jakarta.validation.constraints.NotBlank(message = "{validation.employee.email.required}")
+            @jakarta.validation.constraints.Email(message = "{validation.employee.email.invalid}")
         companyId:
           type: integer
           format: int64
