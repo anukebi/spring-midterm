@@ -1,6 +1,7 @@
-package org.edu.kiu.midterm.service;
+package org.edu.kiu.midterm.service.hook;
 
 import lombok.RequiredArgsConstructor;
+import org.edu.kiu.midterm.config.properties.AppCredentialsProperties;
 import org.edu.kiu.midterm.model.entity.UserEntity;
 import org.edu.kiu.midterm.repository.UserRepository;
 import org.edu.kiu.midterm.model.Role;
@@ -20,6 +21,7 @@ public class UserInitializerService implements ApplicationRunner {
 
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
+  private final AppCredentialsProperties appCredentialsProperties;
 
   @Override
   public void run(ApplicationArguments args) {
@@ -27,8 +29,8 @@ public class UserInitializerService implements ApplicationRunner {
       return;
     }
 
-    userRepository.save(new UserEntity(null, "admin", passwordEncoder.encode("admin123"), Role.ADMIN, true));
-    userRepository.save(new UserEntity(null, "user", passwordEncoder.encode("user123"), Role.USER, true));
+    userRepository.save(new UserEntity(null, "admin", passwordEncoder.encode(appCredentialsProperties.getAdminPassword()), Role.ADMIN, true));
+    userRepository.save(new UserEntity(null, "user", passwordEncoder.encode(appCredentialsProperties.getUserPassword()), Role.USER, true));
   }
 
 }
