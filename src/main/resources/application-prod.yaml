@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/midterm}
+    username: ${DB_USERNAME:midterm}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+
+app:
+  settings:
+    pagination-limit: 20
+    contact-email: support@midterm.com
+    external-service-url: https://api.midterm.com
+
+logging:
+  level:
+    root: WARN
+    org.edu.kiu.midterm: INFO
