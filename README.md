@@ -92,6 +92,69 @@ token.
 - `UserService` - loads users from PostgreSQL
 - `@EnableMethodSecurity` - enables `@PreAuthorize` on service methods
 
+## Profiles, i18n & logging
+
+### Running with a profile
+
+Default profile is **`dev`** (H2 in-memory + sample data). Use **`prod`** for PostgreSQL.
+
+**Command line:**
+
+```bash
+# dev — H2, debug logging, pre-populated ref data
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+
+# prod — PostgreSQL (local or via docker compose)
+mvn spring-boot:run -Dspring-boot.run.profiles=prod
+```
+
+**IDE:** set active profile to `dev` or `prod` in run configuration (Spring Boot tab → Active profiles).
+
+**Docker Compose** already sets `SPRING_PROFILES_ACTIVE=prod`.
+
+### Custom properties (`app.*`)
+
+Bound via `@ConfigurationProperties` + `@Validated` in `AppSettingsProperties` and `AppCredentialsProperties`:
+
+| Property                            | Role                                           |
+|-------------------------------------|------------------------------------------------|
+| `app.settings.title`                | App title shown in `/api/app-info`             |
+| `app.settings.pagination-limit`     | Max companies returned by `GET /api/companies` |
+| `app.settings.contact-email`        | Contact email in app metadata                  |
+| `app.settings.external-service-url` | External service URL in app metadata           |
+| `app.credentials.adminPassword`     | Password for preconfigured admin user          |
+| `app.credentials.userPassword`      | Password for preconfigured user                |
+
+Values differ per profile — check `application-dev.yaml` vs `application-prod.yaml`.
+
+### i18n (Accept-Language)
+
+Message bundles: `messages.properties`, `messages_en.properties`, `messages_ka.properties` (UTF-8).
+
+Locale comes from the **`Accept-Language`** header (`AcceptHeaderLocaleResolver`). Supported: `en`, `ka`.
+
+**What is localized:**
+
+- `GET /api/app-info` — `welcomeMessage` field
+- `GlobalExceptionHandler` — 404, 403, 500 bodies
+- Validation error messages in `openapi.yaml`
+
+**Try it:**
+
+```bash
+curl -H "Accept-Language: en" http://localhost:8080/api/app-info
+curl -H "Accept-Language: ka" http://localhost:8080/api/app-info
+```
+
+Georgian welcome example: `კეთილი იყოს თქვენი მობრძანება ...`
+
+### Logging
+
+- SLF4J via Lombok `@Slf4j`
+- Levels: **DEBUG** (reads), **INFO** (creates/updates/deletes), **WARN/ERROR** (exceptions)
+- Log file: **`logs/app.log`** (rolling, 10 MB per file, 7 days history)
+- Profile controls verbosity — see table above
+
 ## Tech stack
 
 - **Java**: 21
@@ -99,7 +162,7 @@ token.
 - **Web**: Spring WebMVC
 - **Security**: Spring Security (BCrypt, roles, method security)
 - **Persistence**: Spring Data JPA (Hibernate)
-- **Database**: PostgreSQL
+- **Database**: PostgreSQL (prod) / H2 (dev)
 - **Migrations**: Liquibase (`src/main/resources/db/changelog`)
 - **OpenAPI / Swagger UI**: springdoc
 - **DTOs + API interfaces**: generated from `src/main/resources/api/openapi.yaml` via OpenAPI Generator
@@ -129,6 +192,10 @@ token.
 ## API endpoints (CRUD)
 
 Defined in `src/main/resources/api/openapi.yaml`.
+
+### App
+
+- **GET** `/api/app-info` — app metadata + localized welcome (public)
 
 ### Company
 
