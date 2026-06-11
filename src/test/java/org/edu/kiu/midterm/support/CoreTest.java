@@ -2,12 +2,14 @@ package org.edu.kiu.midterm.support;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
+import org.edu.kiu.midterm.util.HelperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @Testcontainers
+@ActiveProfiles("prod")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public abstract class CoreTest {
 
@@ -69,17 +72,8 @@ public abstract class CoreTest {
   }
 
   @SneakyThrows
-  public <T> T loadResource(String path, Class<T> cls) {
-    var objectMapper = new ObjectMapper();
-    var content = loadResource(path);
-    return objectMapper.readValue(content, cls);
-  }
-
-  @SneakyThrows
   protected String loadResource(String path) {
-    var resource = new PathMatchingResourcePatternResolver().getResource(CLASSPATH_PREFIX + path);
-    return new BufferedReader(new InputStreamReader(resource.getInputStream()))
-        .lines().collect(Collectors.joining(System.lineSeparator()));
+    return HelperUtils.getResourceContent(path);
   }
 
 }
