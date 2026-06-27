@@ -74,9 +74,13 @@ in as `admin` / `admin123` → 200.
 CSRF is **explicitly configured** in `SecurityConfig`:
 
 ```java
-.csrf(csrf -> csrf
-		.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-		.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
+.csrf(csrf ->csrf
+    .
+
+csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+    .
+
+csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
 ```
 
 Because authentication uses **`JSESSIONID`**, mutating requests (`POST`, `PUT`, `DELETE`) must include a valid CSRF
@@ -150,10 +154,42 @@ Georgian welcome example: `კეთილი იყოს თქვენი �
 
 ### Logging
 
-- SLF4J via Lombok `@Slf4j`
-- Levels: **DEBUG** (reads), **INFO** (creates/updates/deletes), **WARN/ERROR** (exceptions)
-- Log file: **`logs/app.log`** (rolling, 10 MB per file, 7 days history)
-- Profile controls verbosity — see table above
+- **SLF4J** via Lombok `@Slf4j` with **parameterized** messages (`log.info("... id {}", id)`)
+- **Log4j2** configured in `log4j2-spring.xml` (console + rolling file appenders)
+- Log file: **`logs/app.log`** (rolling: 10 MB per file, 7 days history, 100 MB total cap)
+- **Profile-specific** levels in `log4j2-spring.xml`:
+    - **`dev`**: root `INFO`, application package `DEBUG`
+    - **`prod`**: root `WARN`, application package `INFO`
+- **`dev`** profile also sets `management.endpoint.health.show-details=always` for easier local debugging
+
+## Monitoring
+
+Actuator endpoints are exposed for health checks and operational visibility.
+
+| Endpoint                | Access    | Purpose                                   |
+|-------------------------|-----------|-------------------------------------------|
+| `GET /actuator/health`  | Public    | Application and database health           |
+| `GET /actuator/info`    | **ADMIN** | Build, Java, env, and custom app metadata |
+| `GET /actuator/metrics` | **ADMIN** | Micrometer metrics (JVM, HTTP, custom)    |
+
+**Custom monitoring components** (`monitoring/` package):
+
+- `UsersHealthIndicator` - verifies seeded users exist (expects at least admin + user)
+- `AppInfoContributor` - adds `app.*` details to `/actuator/info` from `AppSettingsProperties`
+- `CompanyMetrics` - `midterm.companies.created` counter and `midterm.companies.total` gauge
+
+**Examples:**
+
+```bash
+# Public health check (no login)
+curl http://localhost:8080/actuator/health
+
+# Metrics (admin session required - log in via browser or POST /login first)
+curl -b cookies.txt http://localhost:8080/actuator/metrics
+curl -b cookies.txt http://localhost:8080/actuator/metrics/midterm.companies.total
+```
+
+Health details are shown **when authorized** in `prod`; in **`dev`** they are always visible.
 
 ## Tech stack
 
@@ -165,8 +201,12 @@ Georgian welcome example: `კეთილი იყოს თქვენი �
 - **Database**: PostgreSQL (prod) / H2 (dev)
 - **Migrations**: Liquibase (`src/main/resources/db/changelog`)
 - **OpenAPI / Swagger UI**: springdoc
+- **Monitoring**: Spring Boot Actuator + Micrometer
+- **Logging**: SLF4J + Log4j2
 - **DTOs + API interfaces**: generated from `src/main/resources/api/openapi.yaml` via OpenAPI Generator
-- **Tests**: JUnit 5, MockMvc, Testcontainers (PostgreSQL)
+    - **Schemas**: `src/main/resources/api/schemas/*.dto.yaml`
+    - **Examples**: `src/main/resources/api/examples/*.sample.json`
+- **Tests**: JUnit 5, Mockito, MockMvc, `@WebMvcTest`, `@DataJpaTest`, Testcontainers (PostgreSQL), JaCoCo
 
 ## Project structure (layered)
 
@@ -191,19 +231,23 @@ Georgian welcome example: `კეთილი იყოს თქვენი �
 
 ## API endpoints (CRUD)
 
-Defined in `src/main/resources/api/openapi.yaml`.
+Defined in `src/main/resources/api/openapi.yaml` (paths), with reusable **`components/requestBodies`**, 
+**`components/responses`**, DTO schemas in `schemas/`, and JSON samples in `examples/`.
+
+Common error responses documented: **400** (validation), **401** (unauthenticated), **403** (forbidden / CSRF), 
+**404** (not found), **500** (server error).
 
 ### App
 
-- **GET** `/api/app-info` — app metadata + localized welcome (public)
+- **GET** `/api/app-info` - app metadata + localized welcome (public)
 
 ### Company
 
-- **POST** `/api/companies` — create company
-- **GET** `/api/companies` — get all companies
-- **GET** `/api/companies/{id}` — get company by id
-- **PUT** `/api/companies/{id}` — update company
-- **DELETE** `/api/companies/{id}` — delete company
+- **POST** `/api/companies` - create company
+- **GET** `/api/companies` - get all companies
+- **GET** `/api/companies/{id}` - get company by id
+- **PUT** `/api/companies/{id}` - update company
+- **DELETE** `/api/companies/{id}` - delete company
 
 ### Employee
 
@@ -256,19 +300,42 @@ Stop containers:
 docker compose down
 ```
 
-## Running tests (integration tests)
+## Running tests
+
+Controller and API behaviour is verified primarily with **integration tests** extending `CoreTest` - full Spring
+context, PostgreSQL Testcontainers, real security (login session + CSRF), Liquibase, and JPA. These assert 
+production-realistic end-to-end behaviour.
+
+`ProfileController` has a **`@WebMvcTest`** slice test (`ProfileControllerWebTest`) with `@BeforeEach` / `@AfterEach`
+lifecycle hooks for isolated controller-layer coverage.
+
+| Type             | Location / annotation                                   | Examples                                                                   |
+|------------------|---------------------------------------------------------|----------------------------------------------------------------------------|
+| Unit             | `service/*Test` (`@ExtendWith(MockitoExtension.class)`) | `CompanyServiceTest`, `PaginationResolverTest`                             |
+| Repository       | `@DataJpaTest`                                          | `CompanyRepositoryTest`                                                    |
+| Controller slice | `@WebMvcTest`                                           | `ProfileControllerWebTest`                                                 |
+| Controller       | `*ControllerTest` + `CoreTest` + Testcontainers         | `CompanyControllerTest`, `EmployeeControllerTest`, `AppInfoControllerTest` |
+| Security/API     | `CoreTest` + Testcontainers                             | `SecurityIntegrationTest`, `ActuatorTest`                                  |
+| Parameterized    | `@ParameterizedTest`                                    | `AppInfoControllerTest`, `PaginationResolverTest`                          |
+
+**Run all tests:**
+
+```bash
+mvn test
+```
+
+**Generate JaCoCo coverage report** (after `mvn test`):
+
+```bash
+open target/site/jacoco/index.html
+```
 
 Integration tests use:
 
 - `MockMvc` for HTTP assertions
 - `Testcontainers` to start a real **PostgreSQL** container
 - `CoreTest` base class (`src/test/java/org/edu/kiu/midterm/support/CoreTest.java`)
-
-Run:
-
-```bash
-mvn test
-```
+- `@ActiveProfiles("prod")` with dynamic datasource properties from the container
 
 ### Test data
 
