@@ -6,10 +6,7 @@ info:
 paths:
   /api/app-info:
     parameters:
-      - in: header
-        name: Accept-Language
-        schema:
-          type: string
+      - $ref: '#/components/parameters/AcceptLanguage'
     get:
       tags:
         - AppInfo
@@ -17,17 +14,13 @@ paths:
       operationId: getAppInfo
       responses:
         '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AppInfoDto'
+          $ref: '#/components/responses/AppInfoResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /api/companies:
     parameters:
-      - in: header
-        name: Accept-Language
-        schema:
-          type: string
+      - $ref: '#/components/parameters/AcceptLanguage'
     get:
       tags:
         - Company
@@ -36,43 +29,32 @@ paths:
       x-spring-paginated: true
       responses:
         '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CompanyDto'
+          $ref: '#/components/responses/CompanyListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       tags:
         - Company
       summary: Create a company
       operationId: saveCompany
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CompanyDto'
+        $ref: '#/components/requestBodies/CompanyPayload'
       responses:
         '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CompanyDto'
+          $ref: '#/components/responses/CompanyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /api/companies/{id}:
     parameters:
-      - in: header
-        name: Accept-Language
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/IdPath'
     get:
       tags:
         - Company
@@ -80,29 +62,31 @@ paths:
       operationId: getCompany
       responses:
         '200':
-          description: Successful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CompanyDto'
+          $ref: '#/components/responses/CompanyResponse'
         '404':
-          description: Not found
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     put:
       tags:
         - Company
       summary: Update a company
       operationId: updateCompany
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CompanyDto'
+        $ref: '#/components/requestBodies/CompanyPayload'
       responses:
         '204':
-          description: Updated
+          $ref: '#/components/responses/NoContent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Not found
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     delete:
       tags:
         - Company
@@ -110,17 +94,19 @@ paths:
       operationId: deleteCompany
       responses:
         '204':
-          description: Deleted
+          $ref: '#/components/responses/NoContent'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Not found
-
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /api/employees:
     parameters:
-      - in: header
-        name: Accept-Language
-        schema:
-          type: string
+      - $ref: '#/components/parameters/AcceptLanguage'
     get:
       tags:
         - Employee
@@ -129,43 +115,34 @@ paths:
       x-spring-paginated: true
       responses:
         '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/EmployeeDto'
+          $ref: '#/components/responses/EmployeeListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       tags:
         - Employee
       summary: Create an employee
       operationId: saveEmployee
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EmployeeDto'
+        $ref: '#/components/requestBodies/EmployeePayload'
       responses:
         '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmployeeDto'
+          $ref: '#/components/responses/EmployeeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /api/employees/{id}:
     parameters:
-      - in: header
-        name: Accept-Language
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/IdPath'
     get:
       tags:
         - Employee
@@ -173,29 +150,31 @@ paths:
       operationId: getEmployee
       responses:
         '200':
-          description: Successful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmployeeDto'
+          $ref: '#/components/responses/EmployeeResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Not found
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     put:
       tags:
         - Employee
       summary: Update an employee
       operationId: updateEmployee
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EmployeeDto'
+        $ref: '#/components/requestBodies/EmployeePayload'
       responses:
         '204':
-          description: Updated
+          $ref: '#/components/responses/NoContent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Not found
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     delete:
       tags:
         - Employee
@@ -203,16 +182,19 @@ paths:
       operationId: deleteEmployee
       responses:
         '204':
-          description: Deleted
+          $ref: '#/components/responses/NoContent'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Not found
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /api/profiles:
     parameters:
-      - in: header
-        name: Accept-Language
-        schema:
-          type: string
+      - $ref: '#/components/parameters/AcceptLanguage'
     get:
       tags:
         - Profile
@@ -221,27 +203,18 @@ paths:
       x-spring-paginated: true
       responses:
         '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProfileDto'
+          $ref: '#/components/responses/ProfileListResponse'
         '401':
-          description: Unauthorized
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /api/profiles/{id}:
     parameters:
-      - in: header
-        name: Accept-Language
-        schema:
-          type: string
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/IdPath'
     get:
       tags:
         - Profile
@@ -249,83 +222,179 @@ paths:
       operationId: getProfile
       responses:
         '200':
-          description: Successful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProfileDto'
+          $ref: '#/components/responses/ProfileResponse'
         '401':
-          description: Unauthorized
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Not found
-
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
 components:
+  parameters:
+    AcceptLanguage:
+      in: header
+      name: Accept-Language
+      schema:
+        type: string
+      description: Preferred language for localized messages (`en`, `ka`)
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
   schemas:
     AppInfoDto:
-      type: object
-      properties:
-        title:
-          type: string
-        contactEmail:
-          type: string
-        paginationLimit:
-          type: integer
-          format: int32
-        externalServiceUrl:
-          type: string
-        welcomeMessage:
-          type: string
+      $ref: './schemas/app-info-dto.yaml'
     CompanyDto:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          x-field-extra-annotation: |-
-            @jakarta.validation.constraints.NotBlank(message = "{validation.company.name.required}")
-            @jakarta.validation.constraints.Size(min = 2, max = 100, message = "{validation.company.name.size}")
-      required:
-        - name
+      $ref: './schemas/company-dto.yaml'
     ProfileDto:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        bio:
-          type: string
-        phoneNumber:
-          type: string
+      $ref: './schemas/profile-dto.yaml'
     EmployeeDto:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        firstName:
-          type: string
-          x-field-extra-annotation: |-
-            @jakarta.validation.constraints.NotBlank(message = "{validation.employee.firstName.required}")
-            @jakarta.validation.constraints.Size(min = 2, max = 50, message = "{validation.employee.firstName.size}")
-        lastName:
-          type: string
-          x-field-extra-annotation: |-
-            @jakarta.validation.constraints.NotBlank(message = "{validation.employee.lastName.required}")
-            @jakarta.validation.constraints.Size(min = 2, max = 50, message = "{validation.employee.lastName.size}")
-        email:
-          type: string
-          x-field-extra-annotation: |-
-            @jakarta.validation.constraints.NotBlank(message = "{validation.employee.email.required}")
-            @jakarta.validation.constraints.Email(message = "{validation.employee.email.invalid}")
-        companyId:
-          type: integer
-          format: int64
-        profile:
-          $ref: '#/components/schemas/ProfileDto'
-      required:
-        - firstName
-        - lastName
-        - email
+      $ref: './schemas/employee-dto.yaml'
+    ErrorResponse:
+      $ref: './schemas/errors.yaml#/components/schemas/ErrorResponse'
+    ValidationErrorResponse:
+      $ref: './schemas/errors.yaml#/components/schemas/ValidationErrorResponse'
+
+  examples:
+    AppInfoDtoExample:
+      externalValue: './examples/app-info-sample.json'
+    CompanyPayloadExample:
+      externalValue: './examples/company-create-sample.json'
+    CompanyDtoExample:
+      externalValue: './examples/company-sample.json'
+    CompanyDtoListExample:
+      externalValue: './examples/company-list-sample.json'
+    EmployeePayloadExample:
+      externalValue: './examples/employee-create-sample.json'
+    EmployeeDtoExample:
+      externalValue: './examples/employee-sample.json'
+    EmployeeDtoListExample:
+      externalValue: './examples/employee-list-sample.json'
+    ProfileDtoExample:
+      externalValue: './examples/profile-sample.json'
+    ProfileDtoListExample:
+      externalValue: './examples/profile-list-sample.json'
+
+  requestBodies:
+    CompanyPayload:
+      required: true
+      description: Company request body (create or update)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CompanyDto'
+          examples:
+            sample:
+              $ref: '#/components/examples/CompanyPayloadExample'
+    EmployeePayload:
+      required: true
+      description: Employee request body (create or update)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EmployeeDto'
+          examples:
+            sample:
+              $ref: '#/components/examples/EmployeePayloadExample'
+
+  responses:
+    AppInfoResponse:
+      description: Application metadata retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AppInfoDto'
+          examples:
+            sample:
+              $ref: '#/components/examples/AppInfoDtoExample'
+
+    CompanyResponse:
+      description: Company retrieved or created successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CompanyDto'
+          examples:
+            sample:
+              $ref: '#/components/examples/CompanyDtoExample'
+
+    CompanyListResponse:
+      description: Companies retrieved successfully
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/CompanyDto'
+          examples:
+            sample:
+              $ref: '#/components/examples/CompanyDtoListExample'
+
+    EmployeeResponse:
+      description: Employee retrieved or created successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EmployeeDto'
+          examples:
+            sample:
+              $ref: '#/components/examples/EmployeeDtoExample'
+
+    EmployeeListResponse:
+      description: Employees retrieved successfully
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/EmployeeDto'
+          examples:
+            sample:
+              $ref: '#/components/examples/EmployeeDtoListExample'
+
+    ProfileResponse:
+      description: Profile retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProfileDto'
+          examples:
+            sample:
+              $ref: '#/components/examples/ProfileDtoExample'
+
+    ProfileListResponse:
+      description: Profiles retrieved successfully
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ProfileDto'
+          examples:
+            sample:
+              $ref: '#/components/examples/ProfileDtoListExample'
+
+    NoContent:
+      description: Operation completed successfully (no response body)
+
+    BadRequest:
+      $ref: './schemas/errors.yaml#/components/responses/BadRequest'
+
+    Unauthorized:
+      $ref: './schemas/errors.yaml#/components/responses/Unauthorized'
+
+    Forbidden:
+      $ref: './schemas/errors.yaml#/components/responses/Forbidden'
+
+    NotFound:
+      $ref: './schemas/errors.yaml#/components/responses/NotFound'
+
+    InternalServerError:
+      $ref: './schemas/errors.yaml#/components/responses/InternalServerError'

@@ -1,0 +1,12 @@
+type: object
+properties:
+  id:
+    type: integer
+    format: int64
+  name:
+    type: string
+    x-field-extra-annotation: |-
+      @jakarta.validation.constraints.NotBlank(message = "{validation.company.name.required}")
+      @jakarta.validation.constraints.Size(min = 2, max = 100, message = "{validation.company.name.size}")
+required:
+  - name

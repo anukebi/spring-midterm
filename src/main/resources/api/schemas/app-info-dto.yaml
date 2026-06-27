@@ -1,0 +1,13 @@
+type: object
+properties:
+  title:
+    type: string
+  contactEmail:
+    type: string
+  paginationLimit:
+    type: integer
+    format: int32
+  externalServiceUrl:
+    type: string
+  welcomeMessage:
+    type: string

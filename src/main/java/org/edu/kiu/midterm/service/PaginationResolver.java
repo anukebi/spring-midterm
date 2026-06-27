@@ -12,9 +12,7 @@ public class PaginationResolver {
   private final AppSettingsProperties appSettingsProperties;
 
   public Pageable resolve(Pageable pageable) {
-    int pageSize = pageable.getPageSize() > appSettingsProperties.getPaginationLimit()
-        ? appSettingsProperties.getPaginationLimit()
-        : pageable.getPageSize();
+    int pageSize = Math.min(pageable.getPageSize(), appSettingsProperties.getPaginationLimit());
     return Pageable.ofSize(pageSize).withPage(pageable.getPageNumber());
   }
 

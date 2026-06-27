@@ -17,6 +17,20 @@ springdoc:
     csrf:
       enabled: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    java:
+      enabled: true
+    env:
+      enabled: true
+
 app:
   settings:
     title: Midterm API
@@ -30,8 +44,3 @@ app:
 logging:
   file:
     name: logs/app.log
-  logback:
-    rollingpolicy:
-      max-file-size: 10MB
-      max-history: 7
-      total-size-cap: 100MB

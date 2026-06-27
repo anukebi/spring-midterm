@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.io.IOException;
  * Forces the deferred CSRF token into the XSRF-TOKEN cookie on every request so
  * Swagger UI / Postman can read it and send X-XSRF-TOKEN on POST/PUT/DELETE.
  */
+@Component
 public class CsrfCookieFilter extends OncePerRequestFilter {
 
   @Override
