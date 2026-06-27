@@ -23,6 +23,8 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+  private final CsrfCookieFilter csrfCookieFilter;
+
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
@@ -81,7 +83,7 @@ public class SecurityConfig {
                 new LoginUrlAuthenticationEntryPoint("/login"),
                 request -> !request.getRequestURI().startsWith("/api/")
                     && !request.getRequestURI().startsWith("/actuator/")))
-        .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
+        .addFilterAfter(csrfCookieFilter, BasicAuthenticationFilter.class);
 
     return http.build();
   }
