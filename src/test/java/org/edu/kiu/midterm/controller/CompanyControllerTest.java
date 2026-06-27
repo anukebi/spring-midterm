@@ -80,6 +80,13 @@ public class CompanyControllerTest extends CoreTest {
   }
 
   @Test
+  @Sql("classpath:data/company/companies.sql")
+  void getCompany_notFound_returns404() throws Exception {
+    mockMvc.perform(get("/api/companies/{id}", 999L).accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
   void createCompany_validationError_returns400() throws Exception {
     var invalidJson = loadResource("data/company/invalid-name-too-short.json");
 

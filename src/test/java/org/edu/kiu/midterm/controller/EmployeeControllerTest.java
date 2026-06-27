@@ -80,6 +80,13 @@ public class EmployeeControllerTest extends CoreTest {
   }
 
   @Test
+  @Sql({"classpath:data/company/companies.sql", "classpath:data/employee/employees.sql"})
+  void getEmployee_notFound_returns404() throws Exception {
+    mockMvc.perform(get("/api/employees/{id}", 999L).session(userSession()).accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
   void createEmployee_validationErrors_returns400() throws Exception {
     var invalidJson = loadResource("data/employee/invalid-request.json");
 
