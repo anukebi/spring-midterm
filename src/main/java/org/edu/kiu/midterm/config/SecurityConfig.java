@@ -42,6 +42,10 @@ public class SecurityConfig {
             .permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
             .permitAll()
+            .requestMatchers("/actuator/health")
+            .permitAll()
+            .requestMatchers("/actuator/**")
+            .hasRole("ADMIN")
             .requestMatchers(HttpMethod.GET, "/api/app-info")
             .permitAll()
             .requestMatchers(HttpMethod.GET, "/api/companies", "/api/companies/**")
@@ -71,10 +75,12 @@ public class SecurityConfig {
         .exceptionHandling(ex -> ex
             .defaultAuthenticationEntryPointFor(
                 new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                request -> request.getRequestURI().startsWith("/api/"))
+                request -> request.getRequestURI().startsWith("/api/")
+                    || request.getRequestURI().startsWith("/actuator/"))
             .defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint("/login"),
-                request -> !request.getRequestURI().startsWith("/api/")))
+                request -> !request.getRequestURI().startsWith("/api/")
+                    && !request.getRequestURI().startsWith("/actuator/")))
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
 
     return http.build();

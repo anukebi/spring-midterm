@@ -17,6 +17,20 @@ springdoc:
     csrf:
       enabled: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    java:
+      enabled: true
+    env:
+      enabled: true
+
 app:
   settings:
     title: Midterm API
