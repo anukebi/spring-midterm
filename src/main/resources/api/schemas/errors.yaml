@@ -1,0 +1,46 @@
+components:
+  schemas:
+    ErrorResponse:
+      type: string
+      description: Localized error message
+      example: Resource not found
+
+    ValidationErrorResponse:
+      type: object
+      description: Field-level validation errors (field name → message)
+      additionalProperties:
+        type: string
+      example:
+        name: Company name must be between 2 and 100 characters
+
+  responses:
+    BadRequest:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+
+    Unauthorized:
+      description: Authentication required (missing or invalid session)
+
+    Forbidden:
+      description: Access denied (insufficient role or missing CSRF token)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Requested resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    InternalServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

@@ -1,0 +1,7 @@
+{
+  "title": "Midterm API",
+  "contactEmail": "support@midterm.com",
+  "paginationLimit": 20,
+  "externalServiceUrl": "https://api.midterm.com",
+  "welcomeMessage": "Welcome to Midterm API"
+}

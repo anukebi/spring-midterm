@@ -1,0 +1,9 @@
+type: object
+properties:
+  id:
+    type: integer
+    format: int64
+  bio:
+    type: string
+  phoneNumber:
+    type: string
